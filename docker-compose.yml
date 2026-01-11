@@ -1,0 +1,10 @@
+version: '3.7'
+
+services:
+  app:
+    build: docker/
+    image: 9cc
+    container_name: 9cc
+    volumes:
+      - .:/usr/local/app
+    tty: true
