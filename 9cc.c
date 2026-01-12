@@ -173,11 +173,13 @@ Node *new_num(int val) {
 
 // 次の EBNF を再帰下降構文解析法でパースするため、これらの非終端記号一つ一つをそのまま関数一つ一つとして実装する
 // expr    = mul ("+" mul | "-" mul)*
-// mul     = primary ("*" primary | "/" primary)*
+// mul     = unary ("*" unary | "/" unary)*
+// unary   = (("+" | "-")? unary) | primary
 // primary = num | "(" expr ")"
 
 Node *expr();
 Node *mul();
+Node *unary();
 Node *primary();
 
 Node *expr() {
@@ -194,16 +196,24 @@ Node *expr() {
 }
 
 Node *mul() {
-  Node *node = primary();
+  Node *node = unary();
 
   for (;;) {
     if (consume('*'))
-      node = new_binary(ND_MUL, node, primary());
+      node = new_binary(ND_MUL, node, unary());
     else if (consume('/'))
-      node = new_binary(ND_DIV, node, primary());
+      node = new_binary(ND_DIV, node, unary());
     else
       return node;
   }
+}
+
+Node *unary() {
+  if (consume('+'))
+    return unary();
+  if (consume('-'))
+    return new_binary(ND_SUB, new_num(0), unary());
+  return primary();
 }
 
 Node *primary() {
